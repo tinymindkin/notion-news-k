@@ -136,11 +136,8 @@ export function buildChartOption({ domain, assets, events }: BuildOptionInput) {
     symbolSize: 10,
     itemStyle: { color: EVENT_COLOR },
     label: {
-      show: true,
-      formatter: (p: any) => {
-        const title = p.data?.name || "";
-        return title.length > 12 ? title.slice(0, 12) + "…" : title;
-      },
+      show: false,
+      formatter: eventLabel,
       position: "right",
       color: "#555",
       fontSize: 10,
@@ -148,6 +145,13 @@ export function buildChartOption({ domain, assets, events }: BuildOptionInput) {
     emphasis: {
       focus: "self",
       itemStyle: { color: "#d97706" },
+      label: {
+        show: true,
+        formatter: eventLabel,
+        position: "right",
+        color: "#555",
+        fontSize: 10,
+      },
     },
   });
 
@@ -205,7 +209,7 @@ export function buildChartOption({ domain, assets, events }: BuildOptionInput) {
         type: "slider",
         xAxisIndex: allXAxisIndex,
         bottom: 8,
-        height: 20,
+        height: 60,
         start: 0,
         end: 100,
       },
@@ -217,6 +221,11 @@ export function buildChartOption({ domain, assets, events }: BuildOptionInput) {
 function fmt(v: number | null | undefined): string {
   if (v == null) return "-";
   return Number(v).toFixed(2);
+}
+
+function eventLabel(p: any): string {
+  const title = p.data?.name || "";
+  return title.length > 12 ? title.slice(0, 12) + "…" : title;
 }
 
 function escapeHtml(s: string): string {

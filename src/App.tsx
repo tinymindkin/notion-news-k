@@ -106,7 +106,7 @@ export default function App() {
           )}
         </div>
       )}
-      <div className="flex flex-1 overflow-hidden">
+      <div className="flex flex-1 min-h-0 overflow-hidden">
         <AssetSidebar assets={assets} visible={visible} onToggle={onToggle} />
         {allFailed ? (
           <div className="flex-1 flex items-center justify-center text-sm text-neutral-500">

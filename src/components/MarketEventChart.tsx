@@ -26,8 +26,8 @@ export function MarketEventChart({ from, to, assets, events, visible }: Props) {
     () => buildChartOption({ domain, assets: visibleAssets, events }),
     [domain, visibleAssets, events],
   );
-
-  const chartHeight = Math.max(400, visibleAssets.filter((a) => a.status === "ok").length * 200 + 220);
+  const okAssetCount = visibleAssets.filter((a) => a.status === "ok").length;
+  const chartHeight = Math.max(520, okAssetCount * 200 + 220);
 
   useEffect(() => {
     const inst = ref.current?.getEchartsInstance() as echarts.ECharts | undefined;
@@ -54,16 +54,16 @@ export function MarketEventChart({ from, to, assets, events, visible }: Props) {
     };
   }, [option]);
 
-  if (visibleAssets.filter((a) => a.status === "ok").length === 0 && events.length === 0) {
+  if (okAssetCount === 0 && events.length === 0) {
     return (
-      <div className="flex-1 flex items-center justify-center text-neutral-400 text-sm">
+      <div className="flex-1 min-h-0 flex items-center justify-center text-neutral-400 text-sm">
         暂无可显示的行情或事件
       </div>
     );
   }
 
   return (
-    <div className="flex-1 overflow-auto bg-white">
+    <div className="chart-scrollbar flex-1 min-h-0 overflow-y-auto overflow-x-hidden bg-white pb-4">
       <ReactECharts
         ref={(r) => {
           ref.current = r;
