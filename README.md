@@ -1,8 +1,16 @@
-# Notion News × Market K-Line
+<p align="center">
+  <img src="docs/assets/logo.png" alt="Notion News × Market K-Line Logo" width="112">
+</p>
+
+<h1 align="center">Notion News × Market K-Line</h1>
 
 把 Notion 里的新闻和事件，放到多类资产的 1D K 线上，用同一条日期轴对照查看。
 
 这是一个本地运行的只读看板：事件来自 Notion，行情优先来自 Finnhub，并在可用时回退到 Yahoo Finance。它适合复盘“事件发生前后，市场发生了什么”，不提供预测、交易信号或投资建议。
+
+## 界面预览
+
+![多资产 K 线与 Notion 新闻事件时间轴](docs/assets/app-preview.png)
 
 ## 功能
 
