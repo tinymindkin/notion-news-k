@@ -1,4 +1,4 @@
-export type AssetType = "stock" | "crypto" | "forex" | "commodity";
+export type AssetType = "stock" | "crypto" | "forex" | "commodity" | "rate";
 
 export interface AssetConfig {
   id: string;

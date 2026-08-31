@@ -17,6 +17,8 @@ const ROOT = path.resolve(__dirname, "..");
 const DIST_DIR = path.join(ROOT, "dist");
 
 const PORT = Number(process.env.PORT) || 8787;
+// 容器通过 HOST=0.0.0.0 对外监听，本地默认只接受回环访问。
+const HOST = process.env.HOST || "127.0.0.1";
 const NOTION_KEY = process.env.NOTION_KEY;
 const NOTION_DATABASE_ID = process.env.NOTION_DATABASE_ID;
 const NOTION_DATA_SOURCE_ID = process.env.NOTION_DATA_SOURCE_ID;
@@ -108,7 +110,7 @@ async function handleCandles(res, searchParams) {
     return;
   }
 
-  if ((!asset.symbol || !asset.endpoint) && !asset.yahooSymbol) {
+  if ((!asset.symbol || !asset.endpoint) && !asset.yahooSymbol && !asset.fredSeries) {
     sendJson(res, 200, {
       asset: asset.id,
       symbol: null,
@@ -144,7 +146,7 @@ async function handleCandles(res, searchParams) {
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
     console.error("[/api/candles] error:", redactMessage(msg));
-    sendJson(res, 500, { error: "Finnhub request failed", detail: redactMessage(msg) });
+    sendJson(res, 500, { error: "Market data request failed", detail: redactMessage(msg) });
   }
 }
 
@@ -222,6 +224,6 @@ const server = http.createServer(async (req, res) => {
   }
 });
 
-server.listen(PORT, "127.0.0.1", () => {
-  console.log(`[server] listening on http://127.0.0.1:${PORT}`);
+server.listen(PORT, HOST, () => {
+  console.log(`[server] listening on http://${HOST}:${PORT}`);
 });

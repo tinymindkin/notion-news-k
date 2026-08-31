@@ -66,12 +66,29 @@ export function buildChartOption({ domain, assets, events }: BuildOptionInput) {
       axisLine: { show: false },
       axisTick: { show: false },
     });
+    const data = domain.map((d) => candleByDateByAsset.get(a.asset.id)?.get(d) || null);
+    // 利率只有单一日值，使用折线展示，避免伪造 OHLC 波动。
+    if (a.asset.type === "rate") {
+      series.push({
+        name: a.asset.label,
+        type: "line",
+        xAxisIndex: i,
+        yAxisIndex: i,
+        data: data.map((c) => c?.[1] ?? null),
+        showSymbol: false,
+        connectNulls: true,
+        lineStyle: { color: "#4572a7", width: 1.5 },
+      });
+      return;
+    }
+
+    // 价格类资产继续沿用现有日 K 线。
     series.push({
       name: a.asset.label,
       type: "candlestick",
       xAxisIndex: i,
       yAxisIndex: i,
-      data: domain.map((d) => candleByDateByAsset.get(a.asset.id)?.get(d) || [null, null, null, null]),
+      data: data.map((c) => c || [null, null, null, null]),
       itemStyle: {
         color: CANDLE_UP,
         color0: CANDLE_DOWN,
@@ -177,6 +194,9 @@ export function buildChartOption({ domain, assets, events }: BuildOptionInput) {
             parts.push(
               `<div>${p.seriesName}: O ${fmt(open)} C ${fmt(close)} L ${fmt(low)} H ${fmt(high)}</div>`,
             );
+          } else if (p.seriesType === "line" && p.data != null) {
+            // 利率折线只显示百分比日值。
+            parts.push(`<div>${p.seriesName}: ${fmt(p.data)}%</div>`);
           } else if (p.seriesType === "scatter") {
             const ev: NewsEvent | undefined = p.data?.eventData;
             if (ev) {

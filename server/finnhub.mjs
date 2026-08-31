@@ -1,6 +1,11 @@
-import { beijingDayStartUnix, beijingDayEndUnix, beijingDateKeyFromDate } from "./dates.mjs";
+import { beijingDayStartUnix, beijingDayEndUnix, beijingDateKeyFromDate, isValidDateKey } from "./dates.mjs";
 
 export async function fetchFinnhubCandles(asset, fromDate, toDate, apiKey) {
+  // FRED 利率序列不经过 Finnhub/Yahoo，直接复用统一 K 线响应结构。
+  if (asset.fredSeries) {
+    return fetchFredCandles(asset.fredSeries, fromDate, toDate);
+  }
+
   let finnhubError = null;
 
   if (asset.symbol && asset.endpoint) {
@@ -33,6 +38,52 @@ export async function fetchFinnhubCandles(asset, fromDate, toDate, apiKey) {
   }
 
   return { error: finnhubError || `Asset ${asset.id} not supported by Finnhub` };
+}
+
+// 从 FRED 拉取官方日频利率，并转换成兼容现有图表的平盘 K 线。
+async function fetchFredCandles(series, fromDate, toDate) {
+  const url = new URL("https://fred.stlouisfed.org/graph/fredgraph.csv");
+  url.searchParams.set("id", series);
+  url.searchParams.set("cosd", fromDate);
+  url.searchParams.set("coed", toDate);
+
+  const res = await fetch(url.toString());
+  // 上游失败时保留简短响应，方便资产状态展示而不泄漏整页内容。
+  if (!res.ok) {
+    return { error: `FRED API error ${res.status}: ${summarize(await res.text())}` };
+  }
+
+  const candles = parseFredCsv(await res.text());
+  // 空区间和全缺失值统一返回 no_data。
+  if (candles.length === 0) {
+    return { error: `FRED returned no data for ${series}` };
+  }
+  return { candles };
+}
+
+// 解析 FRED 两列 CSV；缺失值以点号表示，直接跳过。
+export function parseFredCsv(csv) {
+  const candles = [];
+  const rows = csv.trim().split(/\r?\n/).slice(1);
+  // 每个有效观测映射为 O=H=L=C，避免伪造不存在的日内波动。
+  for (const row of rows) {
+    const [dateKey, rawValue] = row.split(",");
+    const value = Number(rawValue);
+    // 只接受合法日期和有限数值，忽略周末空值或异常行。
+    if (!isValidDateKey(dateKey) || rawValue === "" || !Number.isFinite(value)) {
+      continue;
+    }
+    candles.push({
+      dateKey,
+      time: beijingDayStartUnix(dateKey),
+      open: value,
+      high: value,
+      low: value,
+      close: value,
+      volume: 0,
+    });
+  }
+  return candles;
 }
 
 function parseFinnhubCandles(data) {

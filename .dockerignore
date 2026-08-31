@@ -1,0 +1,8 @@
+# 排除本地和版本控制产物，尤其不把密钥写进镜像。
+.git
+.codegraph
+.env
+node_modules
+dist
+*.log
+.DS_Store

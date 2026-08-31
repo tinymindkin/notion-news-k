@@ -14,7 +14,7 @@
 
 ## 功能
 
-- 同屏查看 AAPL、NVDA、ETH、BTC、USD/RMB 和黄金期货的日 K 线
+- 同屏查看股票、加密货币、主要汇率、黄金/原油期货和美国利率
 - 按北京时间对齐所有 K 线和 Notion 事件
 - 自定义查询日期，默认显示最近 6 个月
 - 勾选资产，控制图表显隐
@@ -137,6 +137,11 @@ PORT=8787
 | `BTC` | BTC | 加密货币 |
 | `USDCNY` | USD/RMB | 外汇 |
 | `GOLD` | 黄金期货 | 商品 |
+| `OIL` | WTI 原油期货 | 商品 |
+| `USDJPY` | USD/JPY（日元） | 外汇 |
+| `EURUSD` | EUR/USD（欧元） | 外汇 |
+| `UST10Y` | 美国10年国债收益率 | 利率 |
+| `FEDFUNDS` | 联邦基金有效利率 | 利率 |
 
 资产配置位于 `shared/assets.mjs`。当前界面不能直接添加资产；如需扩展，请在该文件中配置 Finnhub symbol、endpoint 和 Yahoo symbol。
 
@@ -158,7 +163,8 @@ React / ECharts
       ▼
 Node HTTP server
       ├── Notion API：新闻与事件
-      └── Finnhub API：日 K 线 → Yahoo Finance fallback
+      ├── Finnhub API：日 K 线 → Yahoo Finance fallback
+      └── FRED：美国国债与联邦基金日频利率
 ```
 
 ```text
@@ -186,7 +192,7 @@ Finnhub 可能没有返回该品种的数据、免费账号没有对应权限，
 ## 当前边界
 
 - 只读，不会修改 Notion 内容，也不保存行情数据
-- 仅支持日线和 6 个代码内配置的资产
+- 仅支持日线和代码内配置的资产
 - Notion 事件按单个时间点展示，不支持区间事件或分类筛选
 - 设置、导出、界面内添加资产和暗色模式尚未开放
 - 第三方行情接口的权限、限流和可用性会影响结果

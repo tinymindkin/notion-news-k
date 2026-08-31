@@ -21,6 +21,8 @@ export default function App() {
   const [eventsError, setEventsError] = useState<string | null>(null);
   const [eventsWarnings, setEventsWarnings] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
+  // 新闻搜索词：输入变化会立即触发当前页面重新匹配。
+  const [newsQuery, setNewsQuery] = useState("");
 
   const [visible, setVisible] = useState<Set<string>>(() => new Set(DEFAULT_ASSET_IDS));
 
@@ -90,6 +92,13 @@ export default function App() {
 
   const okCount = assets.filter((a) => a.status === "ok").length;
   const allFailed = !loading && okCount === 0 && eventsError != null;
+  // 新闻筛选：标题和摘要任一包含搜索词即保留，空搜索词展示全部新闻。
+  const normalizedNewsQuery = newsQuery.trim().toLocaleLowerCase();
+  const filteredEvents = normalizedNewsQuery
+    ? events.filter((event) =>
+        `${event.title} ${event.brief}`.toLocaleLowerCase().includes(normalizedNewsQuery),
+      )
+    : events;
 
   return (
     <div className="flex h-full flex-col">
@@ -107,7 +116,14 @@ export default function App() {
         </div>
       )}
       <div className="flex flex-1 min-h-0 overflow-hidden">
-        <AssetSidebar assets={assets} visible={visible} onToggle={onToggle} />
+        <AssetSidebar
+          assets={assets}
+          visible={visible}
+          onToggle={onToggle}
+          events={filteredEvents}
+          newsQuery={newsQuery}
+          onNewsQueryChange={setNewsQuery}
+        />
         {allFailed ? (
           <div className="flex-1 flex items-center justify-center text-sm text-neutral-500">
             <div className="text-center">
@@ -120,7 +136,7 @@ export default function App() {
             from={from}
             to={to}
             assets={assets}
-            events={events}
+            events={filteredEvents}
             visible={visible}
           />
         )}
